@@ -9,11 +9,14 @@ public class player : MonoBehaviour
     bool walk;
     bool dash, isDash;
     bool iDown;
-    bool hammer, gun;
+    public bool hammer, gun;
     bool attack, attackready;
     bool reload, isreload;
     bool isDamaged;
-    //bool isBorder;
+    bool isBorder;
+    bool isFloor;
+    bool isShop; // 쇼핑중인가
+    bool isDead;
     float attackdelay;
 
     public Camera followCamera;
@@ -29,13 +32,15 @@ public class player : MonoBehaviour
 
     public int maxhealth;
     public int maxammo;
+    public int score;
 
     Animator ani;
-    Vector3 moveVec;
+    Vector3 moveVec, forwardVec;
     Rigidbody rigid;
     MeshRenderer[] mat;
     GameObject Object;
-    weapon myweapon;
+    public weapon myweapon;
+    public GameManager manager;
     // Start is called before the first frame update
     void Start()
     {
@@ -73,25 +78,30 @@ public class player : MonoBehaviour
     }
     void Move() {
         moveVec = new Vector3(h, 0, v).normalized; // normalized를 통해 모든 경우 1로 정규화
-        if(!walk) transform.position += moveVec * speed * Time.deltaTime; // 방향키를 누른 방향으로 이동
-        else transform.position += moveVec * speed/2 * Time.deltaTime;
+        if(!isBorder && !isFloor && !isDead) {
+            if(!walk) transform.position += moveVec * speed * Time.deltaTime; // 방향키를 누른 방향으로 이동
+            else transform.position += moveVec * speed/2 * Time.deltaTime;
+        }
         ani.SetBool("isRun", moveVec != Vector3.zero);
         ani.SetBool("isWalk", walk);
     }
     void Turn() {
-        transform.LookAt(transform.position + moveVec);  
+        if(!isDead) {
+            transform.LookAt(transform.position + moveVec);  
         //if(attack) {
             Ray ray = followCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit rayHit;
             if(Physics.Raycast(ray, out rayHit, 100)) {
                 Vector3 nextVec = rayHit.point - transform.position;
                 nextVec.y = 0;
+                forwardVec = transform.position + nextVec;
                 transform.LookAt(transform.position + nextVec);
             } 
         //}
+        }
     }
     void Dash() {
-        if(dash && !isDash && moveVec != Vector3.zero && dashcount > 0) {
+        if(dash && !isDash && !isDead && moveVec != Vector3.zero && dashcount > 0) {
             isDash = true;
             speed *= 2.0f;
             ani.SetTrigger("doDash");
@@ -117,7 +127,7 @@ public class player : MonoBehaviour
                 Destroy(Object);
                 Destroy(GameObject.Find("Weapon SubMachineGun"));
                 hammer = true;
-                //Weapon = 
+                gun = false;
             }
             if((Object.tag == "Weapon") && (Object.name == "Weapon SubMachineGun")) {
                 Item item = Object.GetComponent<Item>();
@@ -126,7 +136,12 @@ public class player : MonoBehaviour
                 Destroy(Object);
                 Destroy(GameObject.Find("Weapon Hammer"));
                 gun = true;
-                //Weapon = 
+                hammer = false;
+            }
+            if(Object.tag == "Shop") { // 상호작용을 하는 오브젝트의 태그가 상점인 경우
+                Shop shop = Object.GetComponent<Shop>();
+                shop.Enter(this); // Shop의 Enter 함수 호출
+                isShop = true;
             }
         }
     }
@@ -144,7 +159,7 @@ public class player : MonoBehaviour
     }
 
     void Attack() {
-        if(myweapon.gameObject == null) {
+        if(myweapon.gameObject == null || isShop) { // 무기가 없거나 상점에서 쇼핑중일 땐 공격 불가능
             return;
         }
         else {
@@ -184,12 +199,16 @@ public class player : MonoBehaviour
     void FreezeRatation() {
         rigid.angularVelocity = Vector3.zero;
     }
-    //void StopToWall() {
-    //    isBorder = Physics.Raycast(transform.position, transform.forward, 5, LayerMask.GetMask("Wall"));
-    //}
+    void StopToWall() {
+        //isBorder = Physics.Raycast(transform.position, transform.forward, 5, LayerMask.GetMask("Wall"));
+        //Debug.DrawRay(transform.position, transform.forward * 5, Color.green);
+        //Debug.DrawRay(transform.position, forwardVec * 5, Color.green);
+        isBorder = Physics.Raycast(transform.position, transform.forward, 5, LayerMask.GetMask("Floor"));
+        isFloor = Physics.Raycast(transform.position, forwardVec, 5, LayerMask.GetMask("Floor"));
+    }
     void FixedUpdate() {
         FreezeRatation();
-    //    StopToWall();
+        StopToWall();
     }
     void OnTriggerEnter(Collider other) {
         if(other.tag == "Item") {
@@ -215,34 +234,58 @@ public class player : MonoBehaviour
 
         }
         else if(other.tag == "EnemyBullet") { 
-            Debug.Log("out");
             if(!isDamaged) { 
-                Debug.Log("in");
                 Bullet enemyBullet = other.GetComponent<Bullet>();
                 health -= enemyBullet.damage;
-                if(other.GetComponent<Rigidbody>() != null) {
-                    Destroy(other.gameObject);
-                }
-                StartCoroutine("OnDamage");
+                bool isBossAtk = (other.name == "Boss Melee Area");
+                //if(other.GetComponent<Rigidbody>() != null) {
+                //    Destroy(other.gameObject);
+                //}
+                StartCoroutine("OnDamage", isBossAtk);
+            }
+            if(other.GetComponent<Rigidbody>() != null) {
+                Debug.Log("akwdkTtma");
+                Destroy(other.gameObject); // 무적과 상관 없이 투사체는 무조건 없어짐
             }
         }
     }
-    IEnumerator OnDamage() {
+    IEnumerator OnDamage(bool isBossAtk) {
         isDamaged = true;
         foreach(MeshRenderer m in mat) {
             m.material.color = Color.yellow;
         }
+        if(isBossAtk) rigid.AddForce(transform.forward * -25, ForceMode.Impulse);
+        if(health <= 0 && !isDead) {
+            OnDie();
+        }   
         yield return new WaitForSeconds(1f);
         isDamaged = false;
         foreach(MeshRenderer m in mat) {
             m.material.color = Color.white;
         }
+        if(isBossAtk) rigid.velocity = Vector3.zero;     
+        
+        
     }
+
+    void OnDie() {
+        ani.SetTrigger("doDie");
+        isDead = true;
+        manager.GameOver();
+    }
+
     void OnTriggerStay(Collider other) {
-        if(other.tag == "Weapon") Object = other.gameObject;
+        if(other.tag == "Weapon" || other.tag == "Shop") Object = other.gameObject;
     }
 
-
-    
+    void OnTriggerExit(Collider other) {
+        //if(other.tag == "Shop") Object = null;
+        if(other.tag == "Shop") {
+            Shop shop = Object.GetComponent<Shop>();
+            shop.Exit();
+            Object = null;
+            isShop = false;
+        }
+    }   
 }
 

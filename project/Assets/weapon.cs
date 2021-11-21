@@ -8,6 +8,7 @@ public class weapon : MonoBehaviour
     public AttackType type;
     public int damage;
     public float rate;
+    public float range;
     public int maxammo;
     public int ammo;
     public BoxCollider meleeArea;
