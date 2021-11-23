@@ -683,7 +683,7 @@ MonoBehaviour:
   etype: 0
   maxHP: 50
   HP: 50
-  score: 0
+  score: 50
   isChase: 0
   isAttack: 0
   target: {fileID: 0}

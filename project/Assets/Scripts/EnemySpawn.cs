@@ -7,8 +7,12 @@ public class EnemySpawn : MonoBehaviour
      //몬스터가 출현할 위치를 담을 배열
     public Transform[] points;
     //몬스터 프리팹을 할당할 변수
-    public GameObject monsterPrefab;
- 
+    public GameObject[] monsterPrefab;
+
+    public GameObject SpawnPoint;
+
+    public GameManager manager;
+
     //몬스터를 발생시킬 주기
     public float createTime;
     //몬스터의 최대 발생 개수
@@ -22,7 +26,7 @@ public class EnemySpawn : MonoBehaviour
     // Use this for initialization
     void Start () {
         //Hierarchy View의 Spawn Point를 찾아 하위에 있는 모든 Transform 컴포넌트를 찾아옴
-        points = GameObject.Find("Spawn Points 1").GetComponentsInChildren<Transform>();
+        points = SpawnPoint.GetComponentsInChildren<Transform>();
  
         if(points.Length > 0)
         {
@@ -55,7 +59,18 @@ public class EnemySpawn : MonoBehaviour
                     //불규칙적인 위치 산출
                     int idx = Random.Range(1, points.Length);
                     //몬스터의 동적 생성
-                    Instantiate(monsterPrefab, points[idx].position, points[idx].rotation);
+                    if(manager.stage == 1) {
+                        Instantiate(monsterPrefab[0], points[idx].position, points[idx].rotation);
+                    }
+                    else if(manager.stage == 2) {
+                        int rand = Random.Range(0, 2);
+                        Instantiate(monsterPrefab[rand], points[idx].position, points[idx].rotation);
+                    }
+                    else if(manager.stage == 3) {
+                        int rand = Random.Range(0, 3);
+                        Instantiate(monsterPrefab[rand], points[idx].position, points[idx].rotation);
+                    }
+
                     curMonster++;
                 }else
                 {

@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 570194960049570705}
   - component: {fileID: 4753247098925612273}
   - component: {fileID: 4753247098925612278}
-  - component: {fileID: 4753247098925612279}
   - component: {fileID: 4753247098925612275}
+  - component: {fileID: 4753247098925612279}
   m_Layer: 3
   m_Name: Enemy B
   m_TagString: Enemy
@@ -28,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4506153633120163075}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 3.7563105, y: 0, z: 21.222301}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 9117498905896186859}
@@ -65,28 +65,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 2.5, y: 2.5, z: 2.5}
   m_Center: {x: 0, y: 1.13, z: 0}
---- !u!195 &4753247098925612279
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4506153633120163075}
-  m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 5
-  m_Acceleration: 15
-  avoidancePriority: 50
-  m_AngularSpeed: 360
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
 --- !u!114 &4753247098925612275
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -102,19 +80,46 @@ MonoBehaviour:
   etype: 1
   maxHP: 80
   HP: 80
-  score: 0
+  score: 100
   isChase: 0
   isAttack: 0
   target: {fileID: 0}
   meleeArea: {fileID: 4753247098680404034}
   bullet_prefab: {fileID: 0}
-  coin_prefab: []
+  coin_prefab:
+  - {fileID: 730218458911928566, guid: d6ba8d446105825498605160b21f2ac7, type: 3}
+  - {fileID: 2522922693498822598, guid: 66d224f1ad229fe42a6439736a2ff716, type: 3}
+  - {fileID: 6010240444429254428, guid: 0beb65dcfc99c4c43a8c0f96796c04e1, type: 3}
+  - {fileID: 5997477297196749803, guid: c976fe0cd0cccf349b4728d2a33f435c, type: 3}
+  - {fileID: 7584188501197027058, guid: 968ff1ed5fbccd04a8d1285eb5ee8498, type: 3}
   rigid: {fileID: 4753247098925612273}
   boxCollider: {fileID: 4753247098925612278}
   mats: []
   reactVec: {x: 0, y: 0, z: 0}
   nav: {fileID: 4753247098925612279}
   ani: {fileID: 4753247098925612285}
+--- !u!195 &4753247098925612279
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4506153633120163075}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 20
+  m_Acceleration: 50
+  avoidancePriority: 50
+  m_AngularSpeed: 360
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!1 &4753247098680404033
 GameObject:
   m_ObjectHideFlags: 0

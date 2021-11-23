@@ -68,7 +68,7 @@ public class enemy : MonoBehaviour
 
     void Update()
     {
-        if(nav.enabled && (etype != EnemyType.Boss)) {
+        if((etype != EnemyType.Boss)) {
             nav.SetDestination(target.position);
             nav.isStopped = !isChase;
         }
@@ -116,7 +116,7 @@ public class enemy : MonoBehaviour
                     break;
                 case EnemyType.B:
                     targetRadius = 1f;
-                    targetRange = 6f; // 크면 클수록 타겟팅을 멀리함
+                    targetRange = 12f; // 크면 클수록 타겟팅을 멀리함
                     break;
                 case EnemyType.C:
                     targetRadius = 0.5f;

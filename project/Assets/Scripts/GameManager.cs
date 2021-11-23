@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour
     public GameObject[] reward;
     public GameObject[] Fireworks;
 
-    public EnemySpawn spawner;
+    public EnemySpawn[] spawner;
 
     void Update() {
         if(isBattle) {
@@ -87,17 +87,19 @@ public class GameManager : MonoBehaviour
 
     public void StageStart() {
         //벽.SetActive(true);
+        //spawner.isStageOver = false;
         foreach(GameObject wall in Walls) {
             wall.SetActive(true);
         }
         stage++;
+        StopCoroutine("Battle");
         StartCoroutine("Battle");
     }
 
     IEnumerator Battle() {
         while(true) {
             yield return new WaitForSeconds(2.0f);
-            if(spawner.isStageOver) {
+            if(spawner[stage-1].isStageOver) {
             //boss = null;
                 StageEnd();
                 break;
