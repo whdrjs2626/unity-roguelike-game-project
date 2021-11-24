@@ -10,8 +10,12 @@ public class Bullet : MonoBehaviour
     NavMeshAgent nav;
     weapon playerweapon;
 
-    void OnCollisionEnter(Collision other) {
-        if((gameObject.name != "Boss Rock") && (other.gameObject.tag != "Floor") && (gameObject.GetComponent<Rigidbody>() != null)) Destroy(gameObject);
+    void OnTriggerEnter(Collider other) {
+        if(other.gameObject.tag == "Wall") Destroy(gameObject);
+        if((this.name == "Boss Melee Area") && (other.gameObject.tag == "Player")) {
+            other.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * 500, ForceMode.Impulse);
+            Debug.Log("Than");
+        }
     }
     void Awake()
     {
@@ -22,7 +26,7 @@ public class Bullet : MonoBehaviour
 
         if(gameObject.name == "Bullet SubMachineGun(Clone)") {
             playerweapon = GameObject.Find("Weapon SubMachineGun").GetComponent<weapon>();
-            //Destroy(gameObject, 1*playerweapon.range);
+            Destroy(gameObject, 1*playerweapon.range);
         }
     }
 

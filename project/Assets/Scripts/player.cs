@@ -21,16 +21,15 @@ public class player : MonoBehaviour
 
     public Camera followCamera;
 
-    int dashcount = 3, maxdashcount = 3;
+    public int dashCount = 3, maxDashCount = 3;
     public GameObject[] Weapon;
     public bool[] hasWeapon;
     
-    public int ammo;
+    public int curAmmo, Ammo, maxAmmo;
     public int coin;
     public int health;
 
     public int maxhealth;
-    public int maxammo;
     public int score;
 
     Animator ani;
@@ -51,6 +50,7 @@ public class player : MonoBehaviour
         rigid = GetComponent<Rigidbody>();
         ani = GetComponentInChildren<Animator>();
         mat = GetComponentsInChildren<MeshRenderer>();
+        StartCoroutine("DashCountUp");
     }
     // Update is called once per frame
     void Update()
@@ -100,16 +100,51 @@ public class player : MonoBehaviour
         }
     }
     void Dash() {
-        if(dash && !isDash && !isDead && moveVec != Vector3.zero) {
+        if(dash && !isDash && !isDead && moveVec != Vector3.zero && dashCount > 0) {
             isDash = true;
             speed *= 2.0f;
             ani.SetTrigger("doDash");
-            dashcount--;
+            dashCount--;
             Invoke("DashEnd", 2);
         }
+        if(dashCount == 1) {
+            manager.Dashs[0].SetActive(true);
+            manager.Dashs[1].SetActive(false);
+            manager.Dashs[2].SetActive(false);
+            manager.Dashs[3].SetActive(false);
+        }
+        else if(dashCount == 2) {
+            manager.Dashs[0].SetActive(true);
+            manager.Dashs[1].SetActive(true);
+            manager.Dashs[2].SetActive(false);
+            manager.Dashs[3].SetActive(false);
+        }
+        else if(dashCount == 3) {
+            manager.Dashs[0].SetActive(true);
+            manager.Dashs[1].SetActive(true);
+            manager.Dashs[2].SetActive(true);
+            manager.Dashs[3].SetActive(false);
+        }
+        else if(dashCount == 4) {
+            manager.Dashs[0].SetActive(true);
+            manager.Dashs[1].SetActive(true);
+            manager.Dashs[2].SetActive(true);
+            manager.Dashs[3].SetActive(true);
+        }
+        else if(dashCount == 0) {
+            manager.Dashs[0].SetActive(false);
+            manager.Dashs[1].SetActive(false);
+            manager.Dashs[2].SetActive(false);
+            manager.Dashs[3].SetActive(false);
+        }
     }
-    void DashCountUp() {
-        dashcount++;
+    IEnumerator DashCountUp() {
+        while(true) {
+            yield return new WaitForSeconds(6f);
+            if(dashCount < maxDashCount) {
+                dashCount++;
+            }
+        }
     }
     void DashEnd() {
         speed *= 0.5f;
@@ -162,20 +197,24 @@ public class player : MonoBehaviour
             return;
         }
         else {
+            bool isShoot = false;
             attackdelay += Time.deltaTime;
             attackready = myweapon.rate < attackdelay;
 
-            if(attack && attackready && !isDash) {
-                myweapon.Use();
-                if(myweapon.type == weapon.AttackType.Melee) ani.SetTrigger("doAttack");
-                else if(myweapon.type == weapon.AttackType.Range) ani.SetTrigger("doShoot");
+            if(attack && attackready && !isDash && curAmmo > 0) {
+                myweapon.Use(isShoot);
+                if(myweapon.type == weapon.AttackType.Melee && !isShoot) ani.SetTrigger("doAttack");
+                else if(myweapon.type == weapon.AttackType.Range && !isShoot) {
+                    ani.SetTrigger("doShoot");
+                    curAmmo--;
+                }
                 attackdelay = 0;
             }
         }
     }
     
     void Reload() {
-        if((myweapon.gameObject == null) || (myweapon.type == weapon.AttackType.Melee) || ammo <= 0) return;
+        if((myweapon.gameObject == null) || (myweapon.type == weapon.AttackType.Melee) || maxAmmo <= 0) return;
         else if(reload && !isreload && !attack && !dash) {
             isreload = true;
             ani.SetTrigger("doReload");
@@ -183,14 +222,15 @@ public class player : MonoBehaviour
         }
     }
 
-    void ReloadEnd() {
-        if(ammo < myweapon.maxammo) {
-            myweapon.ammo = ammo;
-            ammo -= ammo;
+    void ReloadEnd() {      
+        int needAmmo = Ammo - curAmmo; // 현재 탄창에 필요한 탄약 수
+        if(maxAmmo > needAmmo) { // 장전해야 할 탄약 수보다 가지고 있는 탄약 수가 많은 경우
+            maxAmmo -= needAmmo;
+            curAmmo = Ammo; 
         }
-        else {
-            myweapon.ammo = myweapon.maxammo;
-            ammo -= myweapon.maxammo;
+        else { // 현재 가진 탄약 총 개수가 탄창 용량보다 적을 시
+            curAmmo += maxAmmo;
+            maxAmmo = 0;
         }
         isreload = false;
     }
@@ -203,8 +243,8 @@ public class player : MonoBehaviour
         //isBorder = Physics.Raycast(transform.position, transform.forward, 5, LayerMask.GetMask("Wall"));
         //Debug.DrawRay(transform.position, transform.forward * 5, Color.green);
         //Debug.DrawRay(transform.position, forwardVec * 5, Color.green);
-        isBorder = Physics.Raycast(transform.position, transform.forward, 10, LayerMask.GetMask("Wall"));
-        isFloor = Physics.Raycast(transform.position, forwardVec, 10, LayerMask.GetMask("Wall"));
+        isBorder = Physics.Raycast(transform.position, transform.forward, 2, LayerMask.GetMask("Wall"));
+        isFloor = Physics.Raycast(transform.position, forwardVec, 2, LayerMask.GetMask("Wall"));
     }
     void FixedUpdate() {
         FreezeRotation();
@@ -215,7 +255,7 @@ public class player : MonoBehaviour
             Item item = other.GetComponent<Item>();
             switch(item.type) {
                 case Item.ItemType.Ammo:
-                    ammo += item.value;
+                    maxAmmo += item.value;
                    // If(ammo > maxammo) { ammo = maxammo; }
                     break;
                 case Item.ItemType.Coin:
@@ -230,18 +270,29 @@ public class player : MonoBehaviour
                         myweapon.damage += 10;
                     }
                     else if(gun) {
-                        //myweapon.
+                        myweapon.bullet_prefab.GetComponent<Bullet>().damage += 5;
                     }
                     break;
                 case Item.ItemType.SPDUP:
                     speed += 10;
                     break;
                 case Item.ItemType.RANGEUP:
+                    if(hammer) {
+                        myweapon.transform.localScale += new Vector3(0.5f, 0.8f, 0.5f);
+                    }
+                    else if(gun) {
+                        myweapon.range += 0.5f;
+                    }
                     break;
                 case Item.ItemType.RATEUP:
+                    myweapon.rate -= 0.1f;
                     break;
                 case Item.ItemType.MAXHPUP:
                     maxhealth += 50;
+                    break;
+                case Item.ItemType.DASHUP:
+                    manager.plusDash.SetActive(true);
+                    maxDashCount++;
                     break;
             }
             Destroy(other.gameObject);

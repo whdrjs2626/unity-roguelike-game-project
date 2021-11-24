@@ -12,13 +12,13 @@ public class GameManager : MonoBehaviour
     public Boss boss;
     public int stage;
     public float timer;
-    public bool isBattle;
+    public bool isStarted = false;
     public int enemyCnt;
 
     public GameObject menuPanel;
     public GameObject gamePanel;
     public GameObject overPanel;
-    
+
     // 게임판넬 변수
     public Text scoreText; // 점수
     public Text stageText; // 스테이지
@@ -26,8 +26,8 @@ public class GameManager : MonoBehaviour
     public Text playerHPText; // 체력
     public Text playerAmmoText; // 탄약
     public Text playerCoinText; // 돈
-    public RectTransform bossHPGroup; // 보스 체력
-    public RectTransform bossHPBar; // 보스 체력 바
+    //public RectTransform bossHPGroup; // 보스 체력
+    //public RectTransform bossHPBar; // 보스 체력 바
 
     // 게임오버판넬 변수
     public Text resultScore;
@@ -39,8 +39,13 @@ public class GameManager : MonoBehaviour
 
     public EnemySpawn[] spawner;
 
+
+    public GameObject[] Dashs;
+    public GameObject plusDash;
+
     void Update() {
-        if(isBattle) {
+        //GameObject = GameObject.Find("Boss(Clone)");
+        if(isStarted) {
             timer += Time.deltaTime;
         }
     }
@@ -62,9 +67,9 @@ public class GameManager : MonoBehaviour
             playerAmmoText.text = "-";
         }
         else if(player.gun) { // 총인 경우
-            playerAmmoText.text = player.ammo + " / " + player.maxammo;
+            playerAmmoText.text = player.curAmmo + " / " + player.maxAmmo;
         }
-
+        /*
         // 보스 체력 UI
         if(boss != null) {
             bossHPGroup.anchoredPosition = Vector3.down * 50;
@@ -73,6 +78,7 @@ public class GameManager : MonoBehaviour
         else {
             bossHPGroup.anchoredPosition = Vector3.up * 500;
         }
+        */
     }
 
     public void GameStart() {
@@ -83,15 +89,20 @@ public class GameManager : MonoBehaviour
         gamePanel.SetActive(true);
 
         player.gameObject.SetActive(true);
+        isStarted = true;
     }
 
     public void StageStart() {
-        //벽.SetActive(true);
-        //spawner.isStageOver = false;
-        foreach(GameObject wall in Walls) {
-            wall.SetActive(true);
-        }
         stage++;
+        if(stage == 1) {
+            Walls[0].SetActive(true);
+        }
+        else if(stage == 2) {
+            Walls[2].SetActive(true);
+        }
+        else if(stage == 3) {
+            Walls[4].SetActive(true);
+        }
         StopCoroutine("Battle");
         StartCoroutine("Battle");
     }
@@ -108,10 +119,15 @@ public class GameManager : MonoBehaviour
     }
 
     public void StageEnd() {
-        foreach(GameObject wall in Walls) {
-            wall.SetActive(false);
+        if(stage == 1) {
+            Walls[1].SetActive(false);
         }
-        
+        else if(stage == 2) {
+            Walls[3].SetActive(false);
+        }
+        else if(stage == 3) {
+            Walls[5].SetActive(false);
+        }
         int rand = Random.Range(0, 5);
         Instantiate(statUp_prefab[rand], reward[stage-1].transform.position, Quaternion.identity);
         StartCoroutine("FireWork");
@@ -131,6 +147,10 @@ public class GameManager : MonoBehaviour
 
     public void Restart() {
         SceneManager.LoadScene(0);
+    }
+
+    public void GameClear() {
+
     }
 
 }

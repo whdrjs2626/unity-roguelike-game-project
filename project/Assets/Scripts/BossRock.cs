@@ -14,6 +14,7 @@ public class BossRock : Bullet
         rigid = GetComponent<Rigidbody>();
         StartCoroutine(GainPower());
         StartCoroutine(GainPowerTimer());
+        Destroy(gameObject, 7);
     }
 
     IEnumerator GainPowerTimer() {
@@ -23,8 +24,8 @@ public class BossRock : Bullet
 
     IEnumerator GainPower() {
         while(!isShoot) {
-            angularPower += 0.1f;
-            scaleValue += 0.005f;
+            angularPower += 50f;
+            scaleValue += 0.01f;
             transform.localScale = Vector3.one * scaleValue;
             rigid.AddTorque(transform.right * angularPower, ForceMode.Acceleration);
             yield return null;

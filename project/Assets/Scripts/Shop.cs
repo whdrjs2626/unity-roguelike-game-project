@@ -41,7 +41,7 @@ public class Shop : MonoBehaviour
                 enterPlayer.health += 10;
             }
             else if(index == 1) { // 총알 구매
-                enterPlayer.ammo += 30;
+                enterPlayer.maxAmmo += 30;
             }
             else if(index == 2) { // 공격력 증가
                 enterPlayer.myweapon.damage += 5;

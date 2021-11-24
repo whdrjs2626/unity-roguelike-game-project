@@ -63,8 +63,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 2.5, y: 2.5, z: 2.5}
-  m_Center: {x: 0, y: 1.13, z: 0}
+  m_Size: {x: 2.5, y: 5, z: 2.5}
+  m_Center: {x: 0, y: 1.25, z: 0}
 --- !u!114 &4753247098925612275
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -78,8 +78,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   etype: 1
-  maxHP: 80
-  HP: 80
+  maxHP: 100
+  HP: 100
   score: 100
   isChase: 0
   isAttack: 0
@@ -108,8 +108,8 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 20
-  m_Acceleration: 50
+  m_Speed: 30
+  m_Acceleration: 60
   avoidancePriority: 50
   m_AngularSpeed: 360
   m_StoppingDistance: 0
@@ -177,7 +177,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae0924afad9bb4c4291cbadd6466bc80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 10
+  damage: 8
   target: {fileID: 0}
 --- !u!95 &4753247098925612285
 Animator:

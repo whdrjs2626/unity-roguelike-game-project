@@ -18,34 +18,38 @@ public class weapon : MonoBehaviour
     //public Transform bulletcaseposition;
     //public GameObject bulletcase_prefab; 
 
-    public void Use() {
-        Debug.Log("attack");
-        if(type == AttackType.Melee) {
+    //bool isShoot;
+
+    public void Use(bool isShoot) {
+        if(type == AttackType.Melee && !isShoot) {
+            isShoot = true;
             StopCoroutine("Swing");
-            StartCoroutine("Swing");
+            StartCoroutine("Swing", isShoot);
         }
-        else if(type == AttackType.Range && ammo > 0) {
-            Shoot(); 
+        else if(type == AttackType.Range && ammo > 0 && !isShoot) {
+            isShoot = true;
+            StartCoroutine("Shoot", isShoot); 
             ammo--;
         }
     }
 
-    IEnumerator Swing() {
+    IEnumerator Swing(bool isShoot) {
         yield return new WaitForSeconds(0.1f);
-        
         effect.enabled = true;
-
         yield return new WaitForSeconds(0.3f);
         meleeArea.enabled = true;
         yield return new WaitForSeconds(0.1f);
         meleeArea.enabled = false;
         yield return new WaitForSeconds(0.3f);
         effect.enabled = false;       
+        yield return new WaitForSeconds(rate);
+        isShoot = false;
     }
 
-    void Shoot() {
+    IEnumerator Shoot(bool isShoot) {
         GameObject bullet = Instantiate(bullet_prefab, bulletposition.position, bulletposition.rotation);
         bullet.GetComponent<Rigidbody>().AddForce(bulletposition.forward * 100, ForceMode.Impulse);
-        //yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(rate);
+        isShoot = false;
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Item : MonoBehaviour
 {
-    public enum ItemType { Ammo, Coin, Heart, Weapon, ATKUP, SPDUP, RANGEUP, RATEUP, MAXHPUP };
+    public enum ItemType { Ammo, Coin, Heart, Weapon, ATKUP, SPDUP, RANGEUP, RATEUP, MAXHPUP, DASHUP };
     public ItemType type;
     public int value;
     // Start is called before the first frame update

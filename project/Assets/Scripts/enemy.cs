@@ -23,9 +23,10 @@ public class enemy : MonoBehaviour
     public NavMeshAgent nav;
     public Animator ani;
 
-    bool deadFlag = true;
+    protected bool deadFlag = false;
 
     void Awake() {
+        deadFlag = true;
         target = GameObject.Find("Player").transform;
         rigid = GetComponent<Rigidbody>();
         boxCollider = GetComponent<BoxCollider>();
@@ -56,6 +57,7 @@ public class enemy : MonoBehaviour
                 foreach(MeshRenderer mat in mats)
                     mat.material.color = Color.red;
                 Invoke("OnDamage", 0.1f);
+                Destroy(other.gameObject);
             }
             reactVec = transform.position - other.transform.position;
         }
@@ -68,7 +70,8 @@ public class enemy : MonoBehaviour
 
     void Update()
     {
-        if((etype != EnemyType.Boss)) {
+        float distance = Vector3.Distance(target.position, transform.position); 
+        if((etype != EnemyType.Boss) && (distance <= 60.0f)) { // nav.enable
             nav.SetDestination(target.position);
             nav.isStopped = !isChase;
         }
@@ -116,11 +119,11 @@ public class enemy : MonoBehaviour
                     break;
                 case EnemyType.B:
                     targetRadius = 1f;
-                    targetRange = 12f; // 크면 클수록 타겟팅을 멀리함
+                    targetRange = 30f; // 크면 클수록 타겟팅을 멀리함
                     break;
                 case EnemyType.C:
                     targetRadius = 0.5f;
-                    targetRange = 20f;
+                    targetRange = 80f;
                     break;
             }
 
@@ -146,7 +149,7 @@ public class enemy : MonoBehaviour
                 break;
             case EnemyType.B:
                 yield return new WaitForSeconds(0.1f);
-                rigid.AddForce(transform.forward * 20, ForceMode.Impulse);
+                rigid.AddForce(transform.forward * 50, ForceMode.Impulse);
                 meleeArea.enabled = true;
                 yield return new WaitForSeconds(0.5f);
                 rigid.velocity = Vector3.zero;
@@ -155,8 +158,8 @@ public class enemy : MonoBehaviour
                 break;
             case EnemyType.C:
                 yield return new WaitForSeconds(0.5f);
-                GameObject bullet = Instantiate(bullet_prefab, transform.position, new Quaternion(transform.rotation.x, transform.rotation.y+90, transform.rotation.z, transform.rotation.w));
-                bullet.GetComponent<Rigidbody>().AddForce(transform.forward * 20, ForceMode.Impulse);
+                GameObject bullet = Instantiate(bullet_prefab, transform.position, new Quaternion(transform.rotation.x, transform.rotation.y+bullet_prefab.transform.rotation.y, transform.rotation.z, transform.rotation.w));
+                bullet.GetComponent<Rigidbody>().AddForce(transform.forward * 40, ForceMode.Impulse);
                 yield return new WaitForSeconds(2f);
                 
                 break;
