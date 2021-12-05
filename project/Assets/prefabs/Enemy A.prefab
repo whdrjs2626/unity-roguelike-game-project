@@ -701,12 +701,18 @@ MonoBehaviour:
   - {fileID: 6689977935750233035, guid: 3b15ad09f9f45074bb3d00063b880b71, type: 3}
   - {fileID: 2217703584450658188, guid: dd0ea70eeea8d85498f7ca90e76bf4a8, type: 3}
   - {fileID: 608793331111575996, guid: b6b8871e85e58694a82df03483810bac, type: 3}
+  player: {fileID: 0}
   rigid: {fileID: 8832987434171987486}
   boxCollider: {fileID: 8832987434171987481}
   mats: []
   reactVec: {x: 0, y: 0, z: 0}
   nav: {fileID: 0}
   ani: {fileID: 0}
+  manager: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: ebe7008978743b74fa5fd9afeca6e8ec, type: 3}
+  swordattackedSound: {fileID: 8300000, guid: 2123de5ddb9d80a49aa1785d32932b30, type: 3}
+  gunattackedSound: {fileID: 8300000, guid: 01b19812b198fdf40909633e9bf6093e, type: 3}
+  dieSound: {fileID: 8300000, guid: b50ca13e226b9f041b7a20f004ea3b75, type: 3}
 --- !u!195 &8832987434171987487
 NavMeshAgent:
   m_ObjectHideFlags: 0

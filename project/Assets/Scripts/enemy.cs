@@ -22,13 +22,19 @@ public class enemy : MonoBehaviour
     public Vector3 reactVec;
     public NavMeshAgent nav;
     public Animator ani;
+    public GameManager manager;
 
+    public AudioClip attackSound;
+    public AudioClip swordattackedSound;
+    public AudioClip gunattackedSound;
+    public AudioClip dieSound;
     protected bool deadFlag = false;
 
     void Awake() {
         deadFlag = true;
         player = GameObject.Find("Player").GetComponent<player>();
         target = GameObject.Find("Player").transform;
+        manager = GameObject.Find("Game Manager").GetComponent<GameManager>();
         rigid = GetComponent<Rigidbody>();
         boxCollider = GetComponent<BoxCollider>();
         mats = GetComponentsInChildren<MeshRenderer>();
@@ -41,6 +47,7 @@ public class enemy : MonoBehaviour
     void OnTriggerEnter(Collider other) {
         
         if(other.tag == "Melee") {
+            AudioSource.PlayClipAtPoint(swordattackedSound, this.transform.position);
             weapon weapon = other.GetComponent<weapon>();
             if(HP > 0) {
                 HP -= weapon.damage;
@@ -51,7 +58,7 @@ public class enemy : MonoBehaviour
             reactVec = transform.position - other.transform.position;
         }
         else if(other.name == "Bullet SubMachineGun(Clone)") {
-            
+            AudioSource.PlayClipAtPoint(gunattackedSound, this.transform.position);
             Bullet bullet = other.GetComponent<Bullet>();
             if(HP > 0) {
                 HP -= bullet.damage;
@@ -79,20 +86,19 @@ public class enemy : MonoBehaviour
         if(HP <= 0 && deadFlag) {
             foreach(MeshRenderer mat in mats)
                 mat.material.color = Color.gray;
-            
+            AudioSource.PlayClipAtPoint(dieSound, this.transform.position);
             gameObject.layer = 6;
             ani.SetTrigger("doDie");
             isChase = false;
             nav.enabled = false;
             rigid.AddForce((reactVec.normalized + Vector3.up) * 0.08f, ForceMode.Impulse);
             player player = target.GetComponent<player>();
-            //Debug.Log("a");
             player.score += score;
             
             Invoke("itemDrop", 3);
-            //if(etype != EnemyType.Boss) Destroy(gameObject, 4);
             Destroy(gameObject, 3);
             deadFlag = false;
+            if(etype == EnemyType.Boss) manager.GameClear();
         }
     }
 
@@ -184,8 +190,8 @@ public class enemy : MonoBehaviour
         ani.SetBool("isAttack", true);
         switch(etype) {
             case EnemyType.A:
-                
                 yield return new WaitForSeconds(0.2f);
+                AudioSource.PlayClipAtPoint(attackSound, this.transform.position);
                 meleeArea.enabled = true;
                 yield return new WaitForSeconds(1f);
                 meleeArea.enabled = false;
@@ -194,6 +200,7 @@ public class enemy : MonoBehaviour
             case EnemyType.B:
                 yield return new WaitForSeconds(0.1f);
                 rigid.AddForce((target.transform.position - transform.position) * 5, ForceMode.Impulse);
+                AudioSource.PlayClipAtPoint(attackSound, this.transform.position);
                 meleeArea.enabled = true;
                 yield return new WaitForSeconds(0.5f);
                 rigid.velocity = Vector3.zero;
@@ -202,6 +209,7 @@ public class enemy : MonoBehaviour
                 break;
             case EnemyType.C:
                 yield return new WaitForSeconds(0.5f);
+                AudioSource.PlayClipAtPoint(attackSound, this.transform.position);
                 GameObject bullet = Instantiate(bullet_prefab, transform.position, new Quaternion(transform.rotation.x, transform.rotation.y+bullet_prefab.transform.rotation.y, transform.rotation.z, transform.rotation.w));
                 bullet.GetComponent<Rigidbody>().AddForce(transform.forward * 50, ForceMode.Impulse);
                 yield return new WaitForSeconds(2f);

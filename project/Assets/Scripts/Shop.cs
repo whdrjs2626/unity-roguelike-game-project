@@ -12,16 +12,19 @@ public class Shop : MonoBehaviour
 
     public player enterPlayer; // 플레이어
 
-    
+    public AudioClip buySound;
+    public AudioClip failSound;
 
     public void Enter(player p)
     {
+        AudioSource.PlayClipAtPoint(failSound, this.transform.position);
         enterPlayer = p;
         uiGroup.anchoredPosition = Vector3.zero;    
     }
 
     public void Exit()
     {
+        AudioSource.PlayClipAtPoint(failSound, this.transform.position);
         uiGroup.anchoredPosition = Vector3.down * 1000;
     }
 
@@ -31,12 +34,14 @@ public class Shop : MonoBehaviour
 
         int price = itemPrice[index];
         if(price > enterPlayer.coin) {
+            AudioSource.PlayClipAtPoint(failSound, this.transform.position);
             StopCoroutine("Talk"); // 만약 실행 중이면 끄고 시작
             StartCoroutine("Talk");
             return; // 돈이 없으니 못삼
         }
         else {
             enterPlayer.coin -= price;
+            AudioSource.PlayClipAtPoint(buySound, this.transform.position);
             if(index == 0) { // 체력 구매 
                 enterPlayer.health += 10;
                 if(enterPlayer.health > enterPlayer.maxhealth) enterPlayer.health = enterPlayer.maxhealth;

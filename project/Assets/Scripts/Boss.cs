@@ -19,8 +19,15 @@ public class Boss : enemy
     public RectTransform bossHPGroup; // 보스 체력
     public RectTransform bossHPBar; // 보스 체력 바
 
+    public AudioClip rockSound;
+    public AudioClip tauntSound;
+    
+    public AudioClip startSound;
+
 
     void Awake() {
+    
+        AudioSource.PlayClipAtPoint(startSound, this.transform.position);
         deadFlag = true;
         temp = GameObject.Find("Boss Group");
         bossHPGroup = temp.GetComponent<RectTransform>();
@@ -96,7 +103,10 @@ public class Boss : enemy
 
     IEnumerator missileShoot() {
         ani.SetTrigger("doShot");
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.1f);
+        AudioSource.PlayClipAtPoint(attackSound, this.transform.position);
+        yield return new WaitForSeconds(0.1f);
+        AudioSource.PlayClipAtPoint(attackSound, this.transform.position);
         GameObject missileA = Instantiate(missile_prefab, missilePortA.position, missilePortA.rotation);
         Bullet bossMissileA = missileA.GetComponent<Bullet>();
         bossMissileA.target = target;
@@ -111,6 +121,7 @@ public class Boss : enemy
     }
 
     IEnumerator rockShoot() {
+        AudioSource.PlayClipAtPoint(rockSound, this.transform.position);
         isLook = false;
         ani.SetTrigger("doRock");
         Instantiate(bullet_prefab, transform.position+transform.forward*5, transform.rotation);
@@ -128,6 +139,7 @@ public class Boss : enemy
         
         yield return new WaitForSeconds(1.5f);
         meleeArea.enabled = true;
+        AudioSource.PlayClipAtPoint(tauntSound, this.transform.position);
         yield return new WaitForSeconds(0.5f);
         meleeArea.enabled = false;
 

@@ -60,25 +60,6 @@ Transform:
   m_Father: {fileID: 7058494349476846328}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &2254922448586709676
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3104817283535271994}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: dfa5c1ba123657546b0f3f130dd8f530, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &2254922449141120292
 GameObject:
   m_ObjectHideFlags: 0
@@ -138,6 +119,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 20
   target: {fileID: 0}
+--- !u!95 &2254922448586709676
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3104817283535271994}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: dfa5c1ba123657546b0f3f130dd8f530, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &8183165219679554072
 GameObject:
   m_ObjectHideFlags: 0
@@ -248,17 +248,29 @@ MonoBehaviour:
   target: {fileID: 0}
   meleeArea: {fileID: 2254922449141120298}
   bullet_prefab: {fileID: 5524114147900956063, guid: 04a1728c4f4179d42b241e6340d1f0a6, type: 3}
-  coin_prefab: []
+  item_prefab: []
+  player: {fileID: 0}
   rigid: {fileID: 2254922449611928180}
   boxCollider: {fileID: 2254922449141120298}
   mats: []
   reactVec: {x: 0, y: 0, z: 0}
   nav: {fileID: 2254922449611928182}
   ani: {fileID: 2254922448586709676}
+  manager: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: 7976ba6cb1a51fd4a846ffa21bccaadc, type: 3}
+  swordattackedSound: {fileID: 8300000, guid: 2123de5ddb9d80a49aa1785d32932b30, type: 3}
+  gunattackedSound: {fileID: 8300000, guid: 01b19812b198fdf40909633e9bf6093e, type: 3}
+  dieSound: {fileID: 8300000, guid: b50ca13e226b9f041b7a20f004ea3b75, type: 3}
   missile_prefab: {fileID: 1578663099399986963, guid: 7e23df8aae6dcc04bb852903a4ef063b, type: 3}
   missilePortA: {fileID: 2254922448449940879}
   missilePortB: {fileID: 2254922448212314237}
+  manager_object: {fileID: 0}
   manager: {fileID: 0}
+  bossHPGroup: {fileID: 0}
+  bossHPBar: {fileID: 0}
+  rockSound: {fileID: 8300000, guid: 7d156b8a5b340cd46bcf0a76557dd2dd, type: 3}
+  tauntSound: {fileID: 8300000, guid: 9930d5b4be15bb04c9d0a6fa0d7e6b2e, type: 3}
+  startSound: {fileID: 8300000, guid: 5ae4d298ed547ba4c88587effb75d7e1, type: 3}
 --- !u!1001 &2871026136946689387
 PrefabInstance:
   m_ObjectHideFlags: 0

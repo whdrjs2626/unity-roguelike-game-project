@@ -18,6 +18,7 @@ public class GameManager : MonoBehaviour
     public GameObject menuPanel;
     public GameObject gamePanel;
     public GameObject overPanel;
+    public GameObject clearPanel;
 
     // 게임판넬 변수
     public Text scoreText; // 점수
@@ -30,7 +31,10 @@ public class GameManager : MonoBehaviour
     //public RectTransform bossHPBar; // 보스 체력 바
 
     // 게임오버판넬 변수
-    public Text resultScore;
+    public Text overresultScore;
+
+    // 게임클리어판넬 변수
+    public Text clearresultScore;
 
     public GameObject[] Walls;
     public GameObject[] statUp_prefab;
@@ -42,6 +46,10 @@ public class GameManager : MonoBehaviour
 
     public GameObject[] Dashs;
     public GameObject plusDash;
+
+    public AudioClip clickSound;
+    public AudioClip gameOverSound;
+    public AudioClip gameClearSound;
 
     void Update() {
         //GameObject = GameObject.Find("Boss(Clone)");
@@ -63,7 +71,7 @@ public class GameManager : MonoBehaviour
         // 플레이어 스탯 UI
         playerHPText.text = player.health + " / " + player.maxhealth;
         playerCoinText.text = string.Format("{0:n0}", player.coin);
-        if(player.hammer) { // 망치인 경우
+        if(player.sword) { // 망치인 경우
             playerAmmoText.text = "-";
         }
         else if(player.gun) { // 총인 경우
@@ -82,6 +90,7 @@ public class GameManager : MonoBehaviour
     }
 
     public void GameStart() {
+        AudioSource.PlayClipAtPoint(clickSound, this.transform.position);
         menuCamera.SetActive(false);
         mainCamera.SetActive(true);
         
@@ -141,17 +150,22 @@ public class GameManager : MonoBehaviour
     }
 
     public void GameOver() {
+        AudioSource.PlayClipAtPoint(gameOverSound, player.transform.position);    
         gamePanel.SetActive(false);
         overPanel.SetActive(true);
-        resultScore.text = scoreText.text;
+        overresultScore.text = scoreText.text;
     }
 
     public void Restart() {
+        AudioSource.PlayClipAtPoint(clickSound, this.transform.position);
         SceneManager.LoadScene(0);
     }
 
     public void GameClear() {
-
+        AudioSource.PlayClipAtPoint(gameClearSound, player.transform.position);
+        gamePanel.SetActive(false);
+        clearPanel.SetActive(true);
+        clearresultScore.text = scoreText.text;
     }
 
 }

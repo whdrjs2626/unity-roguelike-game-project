@@ -105,6 +105,11 @@ MonoBehaviour:
   reactVec: {x: 0, y: 0, z: 0}
   nav: {fileID: 5240114847295595942}
   ani: {fileID: 5240114847295595948}
+  manager: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: 2d26a270afb1150429adceb7e64bdb72, type: 3}
+  swordattackedSound: {fileID: 8300000, guid: 2123de5ddb9d80a49aa1785d32932b30, type: 3}
+  gunattackedSound: {fileID: 8300000, guid: 01b19812b198fdf40909633e9bf6093e, type: 3}
+  dieSound: {fileID: 8300000, guid: b50ca13e226b9f041b7a20f004ea3b75, type: 3}
 --- !u!195 &5240114847295595942
 NavMeshAgent:
   m_ObjectHideFlags: 0

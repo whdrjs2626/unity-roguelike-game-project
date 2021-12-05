@@ -9,7 +9,7 @@ public class player : MonoBehaviour
     bool walk;
     bool dash, isDash;
     bool iDown;
-    public bool hammer, gun;
+    public bool sword, gun;
     bool attack, attackready;
     bool reload, isreload;
     bool isDamaged;
@@ -32,6 +32,13 @@ public class player : MonoBehaviour
     public int maxhealth;
     public int score;
 
+    public AudioClip shootSound;
+    public AudioClip swingSound;
+    public AudioClip attackedSound;
+    public AudioClip reloadSound;
+    public AudioClip coinSound;
+    public AudioClip statitemSound;
+    public AudioClip dashSound;
 
     Animator ani;
     Vector3 moveVec, forwardVec;
@@ -100,8 +107,9 @@ public class player : MonoBehaviour
     }
     void Dash() {
         if(dash && !isDash && !isDead && moveVec != Vector3.zero && dashCount > 0) {
+            AudioSource.PlayClipAtPoint(dashSound, this.transform.position);
             isDash = true;
-            speed *= 2.0f;
+            speed *= 1.5f;
             ani.SetTrigger("doDash");
             dashCount--;
             Invoke("DashEnd", 2);
@@ -146,20 +154,21 @@ public class player : MonoBehaviour
         }
     }
     void DashEnd() {
-        speed *= 0.5f;
+        speed /= 3f;
+        speed *= 2f;
         isDash = false;
     }
 
     void InterAction() {
         if(iDown && Object != null) { // e가 눌리면서 근처에 오브젝트가 있으면 상호작용
-            if((Object.tag == "Weapon") && (Object.name == "Weapon Hammer")) {
+            if((Object.tag == "Weapon") && (Object.name == "Weapon Sword")) {
                 
                 Item item = Object.GetComponent<Item>();
                 int i = item.value;
                 hasWeapon[i] = true;
                 Destroy(Object);
                 Destroy(GameObject.Find("Weapon SubMachineGun"));
-                hammer = true;
+                sword = true;
                 gun = false;
             }
             if((Object.tag == "Weapon") && (Object.name == "Weapon SubMachineGun")) {
@@ -167,9 +176,9 @@ public class player : MonoBehaviour
                 int i = item.value;
                 hasWeapon[i] = true;
                 Destroy(Object);
-                Destroy(GameObject.Find("Weapon Hammer"));
+                Destroy(GameObject.Find("Weapon Sword"));
                 gun = true;
-                hammer = false;
+                sword = false;
             }
             if(Object.tag == "Shop") { // 상호작용을 하는 오브젝트의 태그가 상점인 경우
                 Shop shop = Object.GetComponent<Shop>();
@@ -179,7 +188,7 @@ public class player : MonoBehaviour
         }
     }
     void Equip() {
-        if(hammer) {
+        if(sword) {
             myweapon = Weapon[0].GetComponent<weapon>();
             Weapon[0].SetActive(true);
             Weapon[1].SetActive(false);
@@ -201,9 +210,16 @@ public class player : MonoBehaviour
             attackready = myweapon.rate < attackdelay;
 
             if(attack && attackready && !isDash && curAmmo > 0) {
-                myweapon.Use(isShoot);
-                if(myweapon.type == weapon.AttackType.Melee && !isShoot) ani.SetTrigger("doAttack");
+                
+                if(myweapon.type == weapon.AttackType.Melee && !isShoot) {
+                    myweapon.Use(isShoot);
+                    AudioSource.PlayClipAtPoint(swingSound, this.transform.position);
+                    ani.SetTrigger("doAttack");
+                
+                }
                 else if(myweapon.type == weapon.AttackType.Range && !isShoot) {
+                    myweapon.Use(isShoot);
+                    AudioSource.PlayClipAtPoint(shootSound, this.transform.position);
                     ani.SetTrigger("doShoot");
                     curAmmo--;
                 }
@@ -215,6 +231,7 @@ public class player : MonoBehaviour
     void Reload() {
         if((myweapon.gameObject == null) || (myweapon.type == weapon.AttackType.Melee) || maxAmmo <= 0) return;
         else if(reload && !isreload && !attack && !dash) {
+            AudioSource.PlayClipAtPoint(reloadSound, this.transform.position);
             isreload = true;
             ani.SetTrigger("doReload");
             Invoke("ReloadEnd", 2f);
@@ -254,17 +271,21 @@ public class player : MonoBehaviour
             Item item = other.GetComponent<Item>();
             switch(item.type) {
                 case Item.ItemType.Ammo:
+                    AudioSource.PlayClipAtPoint(coinSound, this.transform.position);
                     maxAmmo += item.value;
                     break;
                 case Item.ItemType.Coin:
+                    AudioSource.PlayClipAtPoint(coinSound, this.transform.position);
                     coin += item.value;
                     break;
                 case Item.ItemType.Heart:
+                    AudioSource.PlayClipAtPoint(coinSound, this.transform.position);
                     if((health+item.value) > maxhealth) health = maxhealth;
                     else health += item.value; 
                     break;
                 case Item.ItemType.ATKUP:
-                    if(hammer) {
+                    AudioSource.PlayClipAtPoint(statitemSound, this.transform.position);
+                    if(sword) {
                         myweapon.damage += 10;
                     }
                     else if(gun) {
@@ -272,10 +293,12 @@ public class player : MonoBehaviour
                     }
                     break;
                 case Item.ItemType.SPDUP:
+                    AudioSource.PlayClipAtPoint(statitemSound, this.transform.position);
                     speed += 5;
                     break;
                 case Item.ItemType.RANGEUP:
-                    if(hammer) {
+                    AudioSource.PlayClipAtPoint(statitemSound, this.transform.position);
+                    if(sword) {
                         myweapon.transform.localScale += new Vector3(0.5f, 0.8f, 0.5f);
                     }
                     else if(gun) {
@@ -283,12 +306,15 @@ public class player : MonoBehaviour
                     }
                     break;
                 case Item.ItemType.RATEUP:
+                    AudioSource.PlayClipAtPoint(statitemSound, this.transform.position);
                     myweapon.rate -= 0.1f;
                     break;
                 case Item.ItemType.MAXHPUP:
+                    AudioSource.PlayClipAtPoint(statitemSound, this.transform.position);
                     maxhealth += 50;
                     break;
                 case Item.ItemType.DASHUP:
+                    AudioSource.PlayClipAtPoint(statitemSound, this.transform.position);
                     manager.plusDash.SetActive(true);
                     maxDashCount++;
                     break;
@@ -303,9 +329,7 @@ public class player : MonoBehaviour
                 Bullet enemyBullet = other.GetComponent<Bullet>();
                 health -= enemyBullet.damage;
                 bool isBossAtk = (other.name == "Boss Melee Area");
-                //if(other.GetComponent<Rigidbody>() != null) {
-                //    Destroy(other.gameObject);
-                //}
+                AudioSource.PlayClipAtPoint(attackedSound, this.transform.position);
                 StartCoroutine("OnDamage", isBossAtk);
             }
             if(other.GetComponent<Rigidbody>() != null) {
