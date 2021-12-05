@@ -76,17 +76,19 @@ public class Boss : enemy
 
     IEnumerator Think() {
         yield return new WaitForSeconds(0.1f);
-        int rand = Random.Range(0, 5);
+        int rand = Random.Range(0, 7);
         switch(rand) {
             case 0:
             case 1:
+            case 2:
                 StartCoroutine("missileShoot");
                 break;
-            case 2:
             case 3:
+            case 4:
+            case 5:
                 StartCoroutine("rockShoot");
                 break;
-            case 4:
+            case 6:
                 StartCoroutine("Taunt");
                 break;
         }

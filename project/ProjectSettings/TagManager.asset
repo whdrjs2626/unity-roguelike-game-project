@@ -12,6 +12,7 @@ TagManager:
   - EnemyBullet
   - Range
   - Shop
+  - Wall
   layers:
   - Default
   - TransparentFX

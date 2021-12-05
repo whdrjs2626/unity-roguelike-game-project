@@ -129,7 +129,8 @@ public class GameManager : MonoBehaviour
             Walls[5].SetActive(false);
         }
         int rand = Random.Range(0, 5);
-        Instantiate(statUp_prefab[rand], reward[stage-1].transform.position, Quaternion.identity);
+        if(rand == 4 && player.maxDashCount == 4) {}
+        else Instantiate(statUp_prefab[rand], reward[stage-1].transform.position, Quaternion.identity);
         StartCoroutine("FireWork");
     }
 

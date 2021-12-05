@@ -14,7 +14,6 @@ public class Bullet : MonoBehaviour
         if(other.gameObject.tag == "Wall") Destroy(gameObject);
         if((this.name == "Boss Melee Area") && (other.gameObject.tag == "Player")) {
             other.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * 500, ForceMode.Impulse);
-            Debug.Log("Than");
         }
     }
     void Awake()

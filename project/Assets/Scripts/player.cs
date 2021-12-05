@@ -32,6 +32,7 @@ public class player : MonoBehaviour
     public int maxhealth;
     public int score;
 
+
     Animator ani;
     Vector3 moveVec, forwardVec;
     Rigidbody rigid;
@@ -86,8 +87,7 @@ public class player : MonoBehaviour
     }
     void Turn() {
         if(!isDead) {
-            transform.LookAt(transform.position + moveVec);  
-        //if(attack) {
+            transform.LookAt(transform.position + moveVec);
             Ray ray = followCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit rayHit;
             if(Physics.Raycast(ray, out rayHit, 100)) {
@@ -95,8 +95,7 @@ public class player : MonoBehaviour
                 nextVec.y = 0;
                 forwardVec = transform.position + nextVec;
                 transform.LookAt(transform.position + nextVec);
-            } 
-        //}
+            }
         }
     }
     void Dash() {
@@ -256,14 +255,13 @@ public class player : MonoBehaviour
             switch(item.type) {
                 case Item.ItemType.Ammo:
                     maxAmmo += item.value;
-                   // If(ammo > maxammo) { ammo = maxammo; }
                     break;
                 case Item.ItemType.Coin:
                     coin += item.value;
                     break;
                 case Item.ItemType.Heart:
-                    health += item.value;
-                    //If((health > maxhealth)) { health = maxhealth;}  
+                    if((health+item.value) > maxhealth) health = maxhealth;
+                    else health += item.value; 
                     break;
                 case Item.ItemType.ATKUP:
                     if(hammer) {
@@ -274,7 +272,7 @@ public class player : MonoBehaviour
                     }
                     break;
                 case Item.ItemType.SPDUP:
-                    speed += 10;
+                    speed += 5;
                     break;
                 case Item.ItemType.RANGEUP:
                     if(hammer) {
@@ -294,7 +292,7 @@ public class player : MonoBehaviour
                     manager.plusDash.SetActive(true);
                     maxDashCount++;
                     break;
-            }
+            } 
             Destroy(other.gameObject);
         }
         else if(other.tag == "Enemy") {

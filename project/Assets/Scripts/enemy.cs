@@ -14,8 +14,8 @@ public class enemy : MonoBehaviour
     public Transform target;
     public BoxCollider meleeArea;
     public GameObject bullet_prefab;
-    public GameObject[] coin_prefab;
-
+    public GameObject[] item_prefab;
+    public player player;
     public Rigidbody rigid;
     public BoxCollider boxCollider;
     public MeshRenderer[] mats;
@@ -27,6 +27,7 @@ public class enemy : MonoBehaviour
 
     void Awake() {
         deadFlag = true;
+        player = GameObject.Find("Player").GetComponent<player>();
         target = GameObject.Find("Player").transform;
         rigid = GetComponent<Rigidbody>();
         boxCollider = GetComponent<BoxCollider>();
@@ -71,7 +72,7 @@ public class enemy : MonoBehaviour
     void Update()
     {
         float distance = Vector3.Distance(target.position, transform.position); 
-        if((etype != EnemyType.Boss) && (distance <= 60.0f)) { // nav.enable
+        if((etype != EnemyType.Boss) && (distance <= 500.0f)) { // nav.enable
             nav.SetDestination(target.position);
             nav.isStopped = !isChase;
         }
@@ -96,8 +97,51 @@ public class enemy : MonoBehaviour
     }
 
     void itemDrop() {
-        int rand = Random.Range(0, 10);
-        Instantiate(coin_prefab[rand], transform.position, Quaternion.identity);
+        int rand = Random.Range(0, 20);
+        switch(rand) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                Instantiate(item_prefab[0], transform.position, Quaternion.identity);
+                break;
+            case 5:
+            case 6:
+            case 7:
+                Instantiate(item_prefab[1], transform.position, Quaternion.identity);
+                break;
+            case 8:
+            case 9:
+                Instantiate(item_prefab[2], transform.position, Quaternion.identity);
+                break;
+            case 10:
+            case 11:
+                Instantiate(item_prefab[3], transform.position, Quaternion.identity);
+                break;
+            case 12:
+            case 13:
+                Instantiate(item_prefab[4], transform.position, Quaternion.identity);
+                break;
+            case 14:
+                Instantiate(item_prefab[5], transform.position, Quaternion.identity);
+                break;
+            case 15:
+                Instantiate(item_prefab[6], transform.position, Quaternion.identity);
+                break;
+            case 16:
+                Instantiate(item_prefab[7], transform.position, Quaternion.identity);
+                break;
+            case 17:
+                Instantiate(item_prefab[8], transform.position, Quaternion.identity);
+                break;
+            case 18:
+                Instantiate(item_prefab[9], transform.position, Quaternion.identity);
+                break;
+            case 19:
+                if(player.maxDashCount == 3) Instantiate(item_prefab[10], transform.position, Quaternion.identity);
+                break;
+        }
     }
 
     void OnDamage() {
@@ -114,12 +158,12 @@ public class enemy : MonoBehaviour
 
             switch(etype) {
                 case EnemyType.A:
-                    targetRadius = 1.5f;
+                    targetRadius = 1f;
                     targetRange = 3f;
                     break;
                 case EnemyType.B:
                     targetRadius = 1f;
-                    targetRange = 30f; // 크면 클수록 타겟팅을 멀리함
+                    targetRange = 20f; // 크면 클수록 타겟팅을 멀리함
                     break;
                 case EnemyType.C:
                     targetRadius = 0.5f;
@@ -149,7 +193,7 @@ public class enemy : MonoBehaviour
                 break;
             case EnemyType.B:
                 yield return new WaitForSeconds(0.1f);
-                rigid.AddForce(transform.forward * 50, ForceMode.Impulse);
+                rigid.AddForce((target.transform.position - transform.position) * 5, ForceMode.Impulse);
                 meleeArea.enabled = true;
                 yield return new WaitForSeconds(0.5f);
                 rigid.velocity = Vector3.zero;
@@ -159,7 +203,7 @@ public class enemy : MonoBehaviour
             case EnemyType.C:
                 yield return new WaitForSeconds(0.5f);
                 GameObject bullet = Instantiate(bullet_prefab, transform.position, new Quaternion(transform.rotation.x, transform.rotation.y+bullet_prefab.transform.rotation.y, transform.rotation.z, transform.rotation.w));
-                bullet.GetComponent<Rigidbody>().AddForce(transform.forward * 40, ForceMode.Impulse);
+                bullet.GetComponent<Rigidbody>().AddForce(transform.forward * 50, ForceMode.Impulse);
                 yield return new WaitForSeconds(2f);
                 
                 break;

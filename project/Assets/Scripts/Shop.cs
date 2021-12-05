@@ -10,7 +10,7 @@ public class Shop : MonoBehaviour
     public int[] itemPrice;
     public Text talkText;
 
-    player enterPlayer; // 플레이어
+    public player enterPlayer; // 플레이어
 
     
 
@@ -39,6 +39,7 @@ public class Shop : MonoBehaviour
             enterPlayer.coin -= price;
             if(index == 0) { // 체력 구매 
                 enterPlayer.health += 10;
+                if(enterPlayer.health > enterPlayer.maxhealth) enterPlayer.health = enterPlayer.maxhealth;
             }
             else if(index == 1) { // 총알 구매
                 enterPlayer.maxAmmo += 30;

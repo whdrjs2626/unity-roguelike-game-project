@@ -30,9 +30,14 @@ public class EnemySpawn : MonoBehaviour
  
         if(points.Length > 0)
         {
+            Debug.Log("Start");
             //몬스터 생성 코루틴 함수 호출
             StartCoroutine(this.CreateMonster());
 
+            if(manager.stage == 4) {
+                Debug.Log("Boss");
+                Instantiate(monsterPrefab[3], points[1].position, points[1].rotation);
+            }
             //Invoke("setGameOver", 5f);
         }
     }
@@ -70,7 +75,11 @@ public class EnemySpawn : MonoBehaviour
                         int rand = Random.Range(0, 3);
                         Instantiate(monsterPrefab[rand], points[idx].position, points[idx].rotation);
                     }
-
+                    else if(manager.stage == 4) {
+                        Debug.Log("make");
+                        int rand = Random.Range(0, 3);
+                        Instantiate(monsterPrefab[rand], points[idx].position, points[idx].rotation);
+                    }
                     curMonster++;
                 }else
                 {
