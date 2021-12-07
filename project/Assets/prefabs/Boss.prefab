@@ -240,9 +240,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   etype: 3
-  maxHP: 600
-  HP: 600
-  score: 0
+  maxHP: 1000
+  HP: 1000
+  score: 2000
   isChase: 0
   isAttack: 0
   target: {fileID: 0}

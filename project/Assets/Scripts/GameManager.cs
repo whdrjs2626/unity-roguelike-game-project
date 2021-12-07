@@ -27,8 +27,6 @@ public class GameManager : MonoBehaviour
     public Text playerHPText; // 체력
     public Text playerAmmoText; // 탄약
     public Text playerCoinText; // 돈
-    //public RectTransform bossHPGroup; // 보스 체력
-    //public RectTransform bossHPBar; // 보스 체력 바
 
     // 게임오버판넬 변수
     public Text overresultScore;
@@ -51,8 +49,17 @@ public class GameManager : MonoBehaviour
     public AudioClip gameOverSound;
     public AudioClip gameClearSound;
 
+    public AudioClip[] BGM;
+    public AudioSource audioSource;
+
+    public GameObject clearFirework;
+
+    void Awake() {
+        audioSource.clip = BGM[0];
+        audioSource.loop = true;
+        audioSource.Play();
+    } 
     void Update() {
-        //GameObject = GameObject.Find("Boss(Clone)");
         if(isStarted) {
             timer += Time.deltaTime;
         }
@@ -91,25 +98,28 @@ public class GameManager : MonoBehaviour
 
     public void GameStart() {
         AudioSource.PlayClipAtPoint(clickSound, this.transform.position);
-        menuCamera.SetActive(false);
-        mainCamera.SetActive(true);
+        menuCamera.SetActive(false); // 게임 시작 카메라 비활성화
+        mainCamera.SetActive(true); // 메인 카메라 활성화
         
-        menuPanel.SetActive(false);
-        gamePanel.SetActive(true);
+        menuPanel.SetActive(false); // 게임 시작 화면 비활성화
+        gamePanel.SetActive(true); // 게임 화면 활성화
 
-        player.gameObject.SetActive(true);
-        isStarted = true;
+        player.gameObject.SetActive(true); // 플레이어 활성화
+        isStarted = true; // 시작됨
     }
 
     public void StageStart() {
         stage++;
         if(stage == 1) {
+            StartCoroutine("nextBGM", 1);
             Walls[0].SetActive(true);
         }
         else if(stage == 2) {
+            StartCoroutine("nextBGM", 2);
             Walls[2].SetActive(true);
         }
         else if(stage == 3) {
+            StartCoroutine("nextBGM", 3);
             Walls[4].SetActive(true);
         }
         StopCoroutine("Battle");
@@ -120,7 +130,6 @@ public class GameManager : MonoBehaviour
         while(true) {
             yield return new WaitForSeconds(2.0f);
             if(spawner[stage-1].isStageOver) {
-            //boss = null;
                 StageEnd();
                 break;
             }
@@ -135,6 +144,7 @@ public class GameManager : MonoBehaviour
             Walls[3].SetActive(false);
         }
         else if(stage == 3) {
+            StartCoroutine("nextBGM", 4);
             Walls[5].SetActive(false);
         }
         int rand = Random.Range(0, 5);
@@ -143,9 +153,16 @@ public class GameManager : MonoBehaviour
         StartCoroutine("FireWork");
     }
 
+    IEnumerator nextBGM(int i) {
+        audioSource.Stop();
+        yield return new WaitForSeconds(2.0f);
+        audioSource.clip = BGM[i];
+        audioSource.Play();
+    }
+
     IEnumerator FireWork() {
         Fireworks[stage-1].SetActive(true);
-        yield return new WaitForSeconds(5.0f);
+        yield return new WaitForSeconds(8.0f);
         Fireworks[stage-1].SetActive(false);
     }
 
@@ -166,6 +183,12 @@ public class GameManager : MonoBehaviour
         gamePanel.SetActive(false);
         clearPanel.SetActive(true);
         clearresultScore.text = scoreText.text;
+        StartCoroutine("clearFireworks");
     }
 
+    IEnumerator clearFireworks() {
+        clearFirework.SetActive(true);
+        yield return new WaitForSeconds(20.0f);
+        clearFirework.SetActive(false);
+    }
 }

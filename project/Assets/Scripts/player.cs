@@ -10,21 +10,20 @@ public class player : MonoBehaviour
     bool dash, isDash;
     bool iDown;
     public bool sword, gun;
-    bool attack, attackready;
+    bool attack;
     bool reload, isreload;
     bool isDamaged;
-    bool isBorder;
-    bool isFloor;
+    bool isWall;
     bool isShop; // 쇼핑중인가
     bool isDead;
-    float attackdelay;
-
     public Camera followCamera;
 
     public int dashCount = 3, maxDashCount = 3;
     public GameObject[] Weapon;
     public bool[] hasWeapon;
-    
+
+    public bool isShoot = false; // 공격 딜레이를 위한 변수 - 공격중인가? - false일 때 공격 가능
+         
     public int curAmmo, Ammo, maxAmmo;
     public int coin;
     public int health;
@@ -85,7 +84,7 @@ public class player : MonoBehaviour
     }
     void Move() {
         moveVec = new Vector3(h, 0, v).normalized; // normalized를 통해 모든 경우 1로 정규화
-        if(!isBorder && !isFloor && !isDead) {
+        if(!isWall && !isDead) {
             if(!walk) transform.position += moveVec * speed * Time.deltaTime; // 방향키를 누른 방향으로 이동
             else transform.position += moveVec * speed/2 * Time.deltaTime;
         }
@@ -107,12 +106,13 @@ public class player : MonoBehaviour
     }
     void Dash() {
         if(dash && !isDash && !isDead && moveVec != Vector3.zero && dashCount > 0) {
-            AudioSource.PlayClipAtPoint(dashSound, this.transform.position);
-            isDash = true;
-            speed *= 1.5f;
-            ani.SetTrigger("doDash");
-            dashCount--;
-            Invoke("DashEnd", 2);
+            // 스페이스바를 누름 && 대시중X && 살아있음 && 이동 중일때만 && 대시 카운트가 1 이상일 때 대시 가능
+            AudioSource.PlayClipAtPoint(dashSound, this.transform.position); // 대시 사운드
+            isDash = true; // 대시를 시작했으므로 대시 중임을 알림
+            speed *= 1.5f; // 이동속도를 1.5배로 변경
+            ani.SetTrigger("doDash"); // 대시 모션 수행
+            dashCount--; // 현재 대시 횟수 1 감소
+            Invoke("DashEnd", 2); // 2초 뒤 대시 효과를 없애는 함수 호출
         }
         if(dashCount == 1) {
             manager.Dashs[0].SetActive(true);
@@ -145,40 +145,42 @@ public class player : MonoBehaviour
             manager.Dashs[3].SetActive(false);
         }
     }
-    IEnumerator DashCountUp() {
-        while(true) {
-            yield return new WaitForSeconds(6f);
-            if(dashCount < maxDashCount) {
-                dashCount++;
-            }
-        }
-    }
+
     void DashEnd() {
         speed /= 3f;
         speed *= 2f;
         isDash = false;
     }
 
+    IEnumerator DashCountUp() {
+        while(true) {
+            yield return new WaitForSeconds(5f);
+            if(dashCount < maxDashCount) {
+                dashCount++;
+            }
+        }
+    }
+    
+
     void InterAction() {
         if(iDown && Object != null) { // e가 눌리면서 근처에 오브젝트가 있으면 상호작용
             if((Object.tag == "Weapon") && (Object.name == "Weapon Sword")) {
-                
                 Item item = Object.GetComponent<Item>();
-                int i = item.value;
-                hasWeapon[i] = true;
-                Destroy(Object);
-                Destroy(GameObject.Find("Weapon SubMachineGun"));
-                sword = true;
-                gun = false;
+                int i = item.value; // 검의 value = 0
+                hasWeapon[i] = true; // 0번째 무기(검) = true
+                Destroy(Object); // 검 아이템 삭제
+                Destroy(GameObject.Find("Weapon SubMachineGun")); // 총 아이템 삭제
+                sword = true; // 검 변수 true
+                gun = false; // 총 변수 false
             }
             if((Object.tag == "Weapon") && (Object.name == "Weapon SubMachineGun")) {
-                Item item = Object.GetComponent<Item>();
-                int i = item.value;
-                hasWeapon[i] = true;
-                Destroy(Object);
-                Destroy(GameObject.Find("Weapon Sword"));
-                gun = true;
-                sword = false;
+                Item item = Object.GetComponent<Item>(); 
+                int i = item.value; // 총의 value = 1
+                hasWeapon[i] = true; // 배열의 1번째 무기(총) = true 
+                Destroy(Object); // 총 아이템 삭제
+                Destroy(GameObject.Find("Weapon Sword")); // 검 아이템 삭제
+                gun = true; // 총 변수 true
+                sword = false; // 검 변수 false
             }
             if(Object.tag == "Shop") { // 상호작용을 하는 오브젝트의 태그가 상점인 경우
                 Shop shop = Object.GetComponent<Shop>();
@@ -199,42 +201,34 @@ public class player : MonoBehaviour
             Weapon[0].SetActive(false);
         }
     }
-
+       
     void Attack() {
-        if(myweapon.gameObject == null || isShop || isDead) { // 무기가 없거나 상점에서 쇼핑중일 땐 공격 불가능
+        if(!(sword || gun) || isShop || isDead) { // 무기가 없거나 상점에서 쇼핑중일 땐 공격 불가능
             return;
         }
-        else {
-            bool isShoot = false;
-            attackdelay += Time.deltaTime;
-            attackready = myweapon.rate < attackdelay;
-
-            if(attack && attackready && !isDash && curAmmo > 0) {
-                
-                if(myweapon.type == weapon.AttackType.Melee && !isShoot) {
-                    myweapon.Use(isShoot);
-                    AudioSource.PlayClipAtPoint(swingSound, this.transform.position);
-                    ani.SetTrigger("doAttack");
-                
+        else if(attack && !isDash && curAmmo > 0 && !isShoot) { // 좌클릭 && 대쉬중이지 않음 && 탄약 1 이상 && 공격중이지 않음
+                if(myweapon.type == weapon.AttackType.Melee) { // 근접 공격인 경우(검)
+                    myweapon.Use(); // 공격 함수
+                    AudioSource.PlayClipAtPoint(swingSound, this.transform.position); // 검 휘두르는 사운드
+                    ani.SetTrigger("doAttack"); // 검 휘두르는 모션
                 }
-                else if(myweapon.type == weapon.AttackType.Range && !isShoot) {
-                    myweapon.Use(isShoot);
-                    AudioSource.PlayClipAtPoint(shootSound, this.transform.position);
-                    ani.SetTrigger("doShoot");
-                    curAmmo--;
+                else if(myweapon.type == weapon.AttackType.Range) { // 원거리 공격인 경우(총)
+                    myweapon.Use(); // 공격 함수
+                    AudioSource.PlayClipAtPoint(shootSound, this.transform.position); // 총 발사 사운드
+                    ani.SetTrigger("doShoot"); // 총 쏘는 모션
+                    curAmmo--; // 탄약 1 감소
                 }
-                attackdelay = 0;
-            }
         }
     }
     
     void Reload() {
-        if((myweapon.gameObject == null) || (myweapon.type == weapon.AttackType.Melee) || maxAmmo <= 0) return;
-        else if(reload && !isreload && !attack && !dash) {
-            AudioSource.PlayClipAtPoint(reloadSound, this.transform.position);
-            isreload = true;
-            ani.SetTrigger("doReload");
-            Invoke("ReloadEnd", 2f);
+        if(!gun || maxAmmo <= 0) return;
+        // 무기가 총이 아니거나 보유 탄약이 없는 경우 장전 불가능
+        else if(reload && !isreload && !attack && !dash) { // 위 경우를 제외하고 R을 누른 상태에서 공격, 장전, 대시 중이 아닌 경우
+            AudioSource.PlayClipAtPoint(reloadSound, this.transform.position); // 재장전 사운드
+            isreload = true; // 장전중인가? true
+            ani.SetTrigger("doReload"); // 장전 모션 수행
+            Invoke("ReloadEnd", 2f); // 2초 뒤 장전 종료 함수 수행
         }
     }
 
@@ -255,16 +249,12 @@ public class player : MonoBehaviour
         rigid.angularVelocity = Vector3.zero;
         rigid.velocity = Vector3.zero;
     }
-    void StopToWall() {
-        //isBorder = Physics.Raycast(transform.position, transform.forward, 5, LayerMask.GetMask("Wall"));
-        //Debug.DrawRay(transform.position, transform.forward * 5, Color.green);
-        //Debug.DrawRay(transform.position, forwardVec * 5, Color.green);
-        isBorder = Physics.Raycast(transform.position, transform.forward, 2, LayerMask.GetMask("Wall"));
-        isFloor = Physics.Raycast(transform.position, forwardVec, 2, LayerMask.GetMask("Wall"));
+    void stopMove() {
+        isWall = Physics.Raycast(transform.position, moveVec, 5, LayerMask.GetMask("Wall"));
     }
     void FixedUpdate() {
         FreezeRotation();
-        StopToWall();
+        stopMove();
     }
     void OnTriggerEnter(Collider other) {
         if(other.tag == "Item") {
@@ -307,7 +297,13 @@ public class player : MonoBehaviour
                     break;
                 case Item.ItemType.RATEUP:
                     AudioSource.PlayClipAtPoint(statitemSound, this.transform.position);
-                    myweapon.rate -= 0.1f;
+                    if(sword) {
+                        myweapon.rate -= 0.05f;
+                    }
+                    else if(gun) {
+                        myweapon.rate -= 0.1f;
+                    }
+                    if(myweapon.rate < 0) myweapon.rate = 0;
                     break;
                 case Item.ItemType.MAXHPUP:
                     AudioSource.PlayClipAtPoint(statitemSound, this.transform.position);
@@ -321,15 +317,12 @@ public class player : MonoBehaviour
             } 
             Destroy(other.gameObject);
         }
-        else if(other.tag == "Enemy") {
-
-        }
         else if(other.tag == "EnemyBullet") { 
-            if(!isDamaged) { 
+            if(!isDamaged) { // 공격당하지 않은 경우
                 Bullet enemyBullet = other.GetComponent<Bullet>();
-                health -= enemyBullet.damage;
-                bool isBossAtk = (other.name == "Boss Melee Area");
-                AudioSource.PlayClipAtPoint(attackedSound, this.transform.position);
+                health -= enemyBullet.damage; // 플레이어와 부딪힌 물체(Bullet)의 데미지만큼 체력 감소
+                bool isBossAtk = (other.name == "Boss Melee Area"); // 보스의 공격인가?
+                AudioSource.PlayClipAtPoint(attackedSound, this.transform.position); // 공격 사운드 
                 StartCoroutine("OnDamage", isBossAtk);
             }
             if(other.GetComponent<Rigidbody>() != null) {
@@ -338,29 +331,26 @@ public class player : MonoBehaviour
         }
     }
     IEnumerator OnDamage(bool isBossAtk) {
-        isDamaged = true;
-        foreach(MeshRenderer m in mat) {
-            m.material.color = Color.yellow;
+        isDamaged = true; // 공격을 받음 - 무적 상태
+        foreach(MeshRenderer m in mat) { 
+            m.material.color = Color.yellow; // 플레이어의 모든 Mesh를 노란색으로 변경합니다. 
         }
-        if(isBossAtk) rigid.AddForce(transform.forward * -25, ForceMode.Impulse);
-        if(health <= 0 && !isDead) {
-            OnDie();
+        if(isBossAtk) rigid.AddForce(transform.forward * -25, ForceMode.Impulse); // 보스의 공격을 받은 경우 뒤로 밀려납니다.
+        if(health <= 0 && !isDead) { // 체력이 0 이하인 경우 죽음
+            OnDie(); 
         }   
-        yield return new WaitForSeconds(1f);
-        isDamaged = false;
+        yield return new WaitForSeconds(1f); // 무적 시간 1초
+        isDamaged = false; // 공격을 받아 일시적으로 무적이 되었다가 풀림
         foreach(MeshRenderer m in mat) {
-            m.material.color = Color.white;
+            m.material.color = Color.white; // 풀리면서 플레이어가 흰색으로 다시 돌아옴
         }
-        if(isBossAtk) rigid.velocity = Vector3.zero;     
-        
-        
     }
 
     void OnDie() {
-        ani.SetTrigger("doDie");
-        GetComponent<Rigidbody>().isKinematic = true;
-        isDead = true;
-        manager.GameOver();
+        ani.SetTrigger("doDie"); // 죽음 모션 수행
+        GetComponent<Rigidbody>().isKinematic = true; // 물리 효과 영향을 받지 않게 함
+        isDead = true; // 죽음 플래그 true
+        manager.GameOver(); // 게임 매니저의 GameOver()함수 호출
     }
 
     void OnTriggerStay(Collider other) {
@@ -377,4 +367,3 @@ public class player : MonoBehaviour
         }
     }   
 }
-

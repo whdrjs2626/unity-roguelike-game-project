@@ -30,6 +30,10 @@ public class enemy : MonoBehaviour
     public AudioClip dieSound;
     protected bool deadFlag = false;
 
+    public GameObject attackEffect;
+
+    float distance;
+
     void Awake() {
         deadFlag = true;
         player = GameObject.Find("Player").GetComponent<player>();
@@ -45,29 +49,26 @@ public class enemy : MonoBehaviour
 
 
     void OnTriggerEnter(Collider other) {
-        
-        if(other.tag == "Melee") {
+        if(other.tag == "Melee") { // 근접 공격의 경우
             AudioSource.PlayClipAtPoint(swordattackedSound, this.transform.position);
             weapon weapon = other.GetComponent<weapon>();
-            if(HP > 0) {
-                HP -= weapon.damage;
-                foreach(MeshRenderer mat in mats)
+            if(HP > 0) { // 피격은 살아있을 때만 가능
+                HP -= weapon.damage; // 체력 감소
+                foreach(MeshRenderer mat in mats) // 몬스터의 모든 Mesh를 빨간색으로 변경(피격효과)
                     mat.material.color = Color.red;
-                Invoke("OnDamage", 0.1f);
+                Invoke("OnDamage", 0.1f); // 0.1초 뒤 OnDamage함수 호출
             }
-            reactVec = transform.position - other.transform.position;
         }
-        else if(other.name == "Bullet SubMachineGun(Clone)") {
+        else if(other.tag == "Range") { // 원거리 공격
             AudioSource.PlayClipAtPoint(gunattackedSound, this.transform.position);
             Bullet bullet = other.GetComponent<Bullet>();
             if(HP > 0) {
-                HP -= bullet.damage;
-                foreach(MeshRenderer mat in mats)
+                HP -= bullet.damage; // 체력 감소
+                foreach(MeshRenderer mat in mats) // 피격효과 (빨간색)
                     mat.material.color = Color.red;
-                Invoke("OnDamage", 0.1f);
-                Destroy(other.gameObject);
+                Invoke("OnDamage", 0.1f); // 0.1초 뒤 OnDamage함수 호출
+                Destroy(other.gameObject); // 총알 없앰
             }
-            reactVec = transform.position - other.transform.position;
         }
     }
 
@@ -78,74 +79,85 @@ public class enemy : MonoBehaviour
 
     void Update()
     {
-        float distance = Vector3.Distance(target.position, transform.position); 
-        if((etype != EnemyType.Boss) && (distance <= 500.0f)) { // nav.enable
+        distance = Vector3.Distance(target.position, transform.position); 
+        if((etype != EnemyType.Boss) && (distance <= 500.0f)) { 
             nav.SetDestination(target.position);
             nav.isStopped = !isChase;
         }
-        if(HP <= 0 && deadFlag) {
+        if(HP <= 0 && deadFlag) { // deadFlag는 아래 명령어를 한번만 실행할 수 있게 하기 위함
             foreach(MeshRenderer mat in mats)
-                mat.material.color = Color.gray;
-            AudioSource.PlayClipAtPoint(dieSound, this.transform.position);
-            gameObject.layer = 6;
-            ani.SetTrigger("doDie");
-            isChase = false;
-            nav.enabled = false;
-            rigid.AddForce((reactVec.normalized + Vector3.up) * 0.08f, ForceMode.Impulse);
+                mat.material.color = Color.gray; // 죽으면 몬스터 색상을 회색으로 변경
+            AudioSource.PlayClipAtPoint(dieSound, this.transform.position); // 죽는 사운드 재생
+            gameObject.layer = 6; // 몬스터의 layer을 DeadEnemy로 변경
+            if(etype != EnemyType.C) Destroy(meleeArea); // 죽고 나서 공격하는 것을 막음
+            ani.SetTrigger("doDie"); // 죽음 모션 수행 
+            isChase = false; // 플레이어를 추적하지 않음
+            nav.enabled = false; 
+            rigid.AddForce(((transform.position - target.transform.position).normalized + Vector3.up) * 0.08f, ForceMode.Impulse);
+            // 죽으면서 살짝 뒤로 밀려나게 함
             player player = target.GetComponent<player>();
-            player.score += score;
-            
-            Invoke("itemDrop", 3);
-            Destroy(gameObject, 3);
-            deadFlag = false;
-            if(etype == EnemyType.Boss) manager.GameClear();
+            player.score += score; // 플레이어에게 점수를 줌
+            Invoke("itemDrop", 3); // 3초 뒤 아이템 드롭
+            Destroy(gameObject, 3); // 3초 뒤 몬스터 오브젝트 삭제
+            deadFlag = false; 
         }
     }
 
     void itemDrop() {
-        int rand = Random.Range(0, 20);
+        int rand = Random.Range(0, 30);
         switch(rand) {
             case 0:
             case 1:
             case 2:
             case 3:
             case 4:
-                Instantiate(item_prefab[0], transform.position, Quaternion.identity);
-                break;
             case 5:
             case 6:
             case 7:
-                Instantiate(item_prefab[1], transform.position, Quaternion.identity);
-                break;
+                break; // 노드롭
             case 8:
             case 9:
-                Instantiate(item_prefab[2], transform.position, Quaternion.identity);
-                break;
             case 10:
             case 11:
-                Instantiate(item_prefab[3], transform.position, Quaternion.identity);
-                break;
             case 12:
             case 13:
-                Instantiate(item_prefab[4], transform.position, Quaternion.identity);
-                break;
             case 14:
-                Instantiate(item_prefab[5], transform.position, Quaternion.identity);
+                Instantiate(item_prefab[0], transform.position, Quaternion.identity); // 코인(동)
                 break;
             case 15:
-                Instantiate(item_prefab[6], transform.position, Quaternion.identity);
-                break;
             case 16:
-                Instantiate(item_prefab[7], transform.position, Quaternion.identity);
-                break;
             case 17:
-                Instantiate(item_prefab[8], transform.position, Quaternion.identity);
+                Instantiate(item_prefab[1], transform.position, Quaternion.identity); // 코인(은)
                 break;
             case 18:
-                Instantiate(item_prefab[9], transform.position, Quaternion.identity);
-                break;
             case 19:
-                if(player.maxDashCount == 3) Instantiate(item_prefab[10], transform.position, Quaternion.identity);
+                Instantiate(item_prefab[2], transform.position, Quaternion.identity); // 코인(금)
+                break;
+            case 20:
+            case 21:
+                Instantiate(item_prefab[3], transform.position, Quaternion.identity); // 탄약
+                break;
+            case 22:
+            case 23:
+                Instantiate(item_prefab[4], transform.position, Quaternion.identity); // 체력
+                break;
+            case 24:
+                Instantiate(item_prefab[5], transform.position, Quaternion.identity); // 공격력 증가
+                break;
+            case 25:
+                Instantiate(item_prefab[6], transform.position, Quaternion.identity); // 최대 체력 증가
+                break;
+            case 26:
+                Instantiate(item_prefab[7], transform.position, Quaternion.identity); // 사거리 증가
+                break;
+            case 27:
+                Instantiate(item_prefab[8], transform.position, Quaternion.identity); // 공격 속도 증가
+                break;
+            case 28:
+                Instantiate(item_prefab[9], transform.position, Quaternion.identity); // 이동 속도 증가
+                break;
+            case 29:
+                if(player.maxDashCount == 3) Instantiate(item_prefab[10], transform.position, Quaternion.identity); // 대시 회수 증가
                 break;
         }
     }
@@ -159,28 +171,40 @@ public class enemy : MonoBehaviour
 
     void Targeting() {
         if(etype != EnemyType.Boss && HP > 0) {
-            float targetRadius = 0f;
-            float targetRange = 0f;
-
+            transform.LookAt(target);
             switch(etype) {
                 case EnemyType.A:
-                    targetRadius = 1f;
-                    targetRange = 3f;
+                    if(distance < 4f && !isAttack) StartCoroutine(Attack());
                     break;
                 case EnemyType.B:
-                    targetRadius = 1f;
-                    targetRange = 20f; // 크면 클수록 타겟팅을 멀리함
+                    if(distance < 12f && !isAttack) StartCoroutine(Attack());
                     break;
                 case EnemyType.C:
-                    targetRadius = 0.5f;
-                    targetRange = 80f;
+                    if(distance < 50f && !isAttack) StartCoroutine(Attack());
                     break;
             }
-
-            RaycastHit[] rayHits = Physics.SphereCastAll(transform.position, targetRadius, transform.forward, targetRange, LayerMask.GetMask("Player"));
+            /*
+            float radius = 0f;
+            float maxDistance = 0f;
+            switch(etype) {
+                case EnemyType.A:
+                    radius = 1f;
+                    maxDistance = 3f;
+                    break;
+                case EnemyType.B:
+                    radius = 1f;
+                    maxDistance = 20f; // 크면 클수록 타겟팅을 멀리함 - 돌진
+                    break;
+                case EnemyType.C:
+                    radius = 0.5f;
+                    maxDistance = 80f;
+                    break;
+            }
+            RaycastHit[] rayHits = Physics.SphereCastAll(transform.position, radius, transform.forward, maxDistance, LayerMask.GetMask("Player"));
             if(rayHits.Length > 0 && !isAttack) {
                 StartCoroutine(Attack());
             } 
+            */
         }
     }
 
@@ -190,30 +214,36 @@ public class enemy : MonoBehaviour
         ani.SetBool("isAttack", true);
         switch(etype) {
             case EnemyType.A:
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(0.1f);
                 AudioSource.PlayClipAtPoint(attackSound, this.transform.position);
-                meleeArea.enabled = true;
+                meleeArea.enabled = true;  // 공격을 위한 Object 활성화
                 yield return new WaitForSeconds(1f);
-                meleeArea.enabled = false;
+                meleeArea.enabled = false; // 공격을 위한 Object 비활성화
                 yield return new WaitForSeconds(1f);
                 break;
             case EnemyType.B:
+                attackEffect.SetActive(true);
                 yield return new WaitForSeconds(0.1f);
-                rigid.AddForce((target.transform.position - transform.position) * 5, ForceMode.Impulse);
+                //(target.transform.position - transform.position) 
+                rigid.AddForce(transform.forward* 25, ForceMode.Impulse);
                 AudioSource.PlayClipAtPoint(attackSound, this.transform.position);
-                meleeArea.enabled = true;
-                yield return new WaitForSeconds(0.5f);
+                meleeArea.enabled = true;  // 공격을 위한 Object 활성화
+                yield return new WaitForSeconds(0.3f);
+                attackEffect.SetActive(false);
+                yield return new WaitForSeconds(0.2f);
                 rigid.velocity = Vector3.zero;
-                meleeArea.enabled = false;
-                yield return new WaitForSeconds(2f);
+                meleeArea.enabled = false; // 공격을 위한 Object 비활성화
+                yield return new WaitForSeconds(4f);
                 break;
             case EnemyType.C:
                 yield return new WaitForSeconds(0.5f);
+                attackEffect.SetActive(true);
                 AudioSource.PlayClipAtPoint(attackSound, this.transform.position);
                 GameObject bullet = Instantiate(bullet_prefab, transform.position, new Quaternion(transform.rotation.x, transform.rotation.y+bullet_prefab.transform.rotation.y, transform.rotation.z, transform.rotation.w));
-                bullet.GetComponent<Rigidbody>().AddForce(transform.forward * 50, ForceMode.Impulse);
-                yield return new WaitForSeconds(2f);
-                
+                bullet.GetComponent<Rigidbody>().AddForce(transform.forward * 50, ForceMode.Impulse); // 미사일 발사
+                yield return new WaitForSeconds(0.3f);
+                attackEffect.SetActive(false);
+                yield return new WaitForSeconds(1.7f);
                 break;
         }
         isChase = true;

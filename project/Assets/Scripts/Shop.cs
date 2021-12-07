@@ -5,8 +5,7 @@ using UnityEngine.UI;
 
 public class Shop : MonoBehaviour
 {
-    public RectTransform uiGroup; // UI
-    
+    public GameObject shopPanel;
     public int[] itemPrice;
     public Text talkText;
 
@@ -18,25 +17,22 @@ public class Shop : MonoBehaviour
     public void Enter(player p)
     {
         AudioSource.PlayClipAtPoint(failSound, this.transform.position);
-        enterPlayer = p;
-        uiGroup.anchoredPosition = Vector3.zero;    
+        enterPlayer = p; 
+        shopPanel.SetActive(true);
     }
 
     public void Exit()
     {
         AudioSource.PlayClipAtPoint(failSound, this.transform.position);
-        uiGroup.anchoredPosition = Vector3.down * 1000;
+        shopPanel.SetActive(false);
     }
 
     public void Buy(int index) {
-        //
-        //
-
-        int price = itemPrice[index];
+        int price = itemPrice[index]; // 설정한 아이템 가격
         if(price > enterPlayer.coin) {
             AudioSource.PlayClipAtPoint(failSound, this.transform.position);
-            StopCoroutine("Talk"); // 만약 실행 중이면 끄고 시작
-            StartCoroutine("Talk");
+            StopCoroutine("Message"); // 만약 실행 중이면 끄고 시작
+            StartCoroutine("Message");
             return; // 돈이 없으니 못삼
         }
         else {
@@ -55,7 +51,7 @@ public class Shop : MonoBehaviour
         }
     }
 
-    IEnumerator Talk() {
+    IEnumerator Message() {
         talkText.text = "돈이 부족하시네요...";
         yield return new WaitForSeconds(2.0f);
         talkText.text = "";

@@ -21,7 +21,7 @@ public class Bullet : MonoBehaviour
         if(gameObject.name == "Missile Boss(Clone)") {
             nav = GetComponent<NavMeshAgent>();
         }
-        if(gameObject.name == "Missile Boss(Clone)" || gameObject.name == "Missile(Clone)") Destroy(gameObject, 3);
+        if(gameObject.name == "Missile Boss(Clone)" || gameObject.name == "Missile(Clone)") Destroy(gameObject, 5);
 
         if(gameObject.name == "Bullet SubMachineGun(Clone)") {
             playerweapon = GameObject.Find("Weapon SubMachineGun").GetComponent<weapon>();

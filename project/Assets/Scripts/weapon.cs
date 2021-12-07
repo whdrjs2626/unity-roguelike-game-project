@@ -13,24 +13,25 @@ public class weapon : MonoBehaviour
     public TrailRenderer effect;
     public Transform bulletposition;
     public GameObject bullet_prefab;
+    public player player;
+
     //public Transform bulletcaseposition;
     //public GameObject bulletcase_prefab; 
 
     //bool isShoot;
 
-    public void Use(bool isShoot) {
-        if(type == AttackType.Melee && !isShoot) {
-            isShoot = true;
-            StopCoroutine("Swing");
-            StartCoroutine("Swing", isShoot);
+    public void Use() {
+        if(type == AttackType.Melee && !player.isShoot) {
+            player.isShoot = true;
+            StartCoroutine("Swing");
         }
-        else if(type == AttackType.Range && !isShoot) {
-            isShoot = true;
-            StartCoroutine("Shoot", isShoot); 
+        else if(type == AttackType.Range && !player.isShoot) {
+            player.isShoot = true;
+            StartCoroutine("Shoot"); 
         }
     }
 
-    IEnumerator Swing(bool isShoot) {
+    IEnumerator Swing() {
         yield return new WaitForSeconds(0.1f);
         effect.enabled = true;
         yield return new WaitForSeconds(0.3f);
@@ -39,19 +40,14 @@ public class weapon : MonoBehaviour
         meleeArea.enabled = false;
         yield return new WaitForSeconds(0.1f);
         effect.enabled = false;       
-        yield return new WaitForSeconds(0.2f);
-        yield return new WaitForSeconds(rate);
-        yield return new WaitForSeconds(rate);
-        yield return new WaitForSeconds(rate);
-        yield return new WaitForSeconds(rate);
-        yield return new WaitForSeconds(rate);
-        isShoot = false;
+        yield return new WaitForSeconds(rate*2);
+        player.isShoot = false;
     }
 
-    IEnumerator Shoot(bool isShoot) {
+    IEnumerator Shoot() {
         GameObject bullet = Instantiate(bullet_prefab, bulletposition.position, bulletposition.rotation);
         bullet.GetComponent<Rigidbody>().AddForce(bulletposition.forward * 100, ForceMode.Impulse);
         yield return new WaitForSeconds(rate);
-        isShoot = false;
+        player.isShoot = false;
     }
 }
